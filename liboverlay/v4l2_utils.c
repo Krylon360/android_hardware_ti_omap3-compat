@@ -41,17 +41,17 @@
 #warning -------------------------------------------------------------
 #endif
 
-#define LOG_FUNCTION_NAME    LOGV("%s: %s",  __FILE__, __FUNCTION__);
+#define LOG_FUNCTION_NAME    ALOGV("%s: %s",  __FILE__, __FUNCTION__);
 
-#ifndef LOGE
-#define LOGE(fmt,args...) \
+#ifndef ALOGE
+#define ALOGE(fmt,args...) \
         do { printf(fmt, ##args); } \
         while (0)
 #endif
 
-#ifndef LOGI
-#define LOGI(fmt,args...) \
-        do { LOGE(fmt, ##args); } \
+#ifndef ALOGI
+#define ALOGI(fmt,args...) \
+        do { ALOGE(fmt, ##args); } \
         while (0)
 #endif
 #define V4L2_CID_PRIV_OFFSET			0x00530000
@@ -108,41 +108,41 @@ int v4l2_overlay_open(int id)
 
 void dump_pixfmt(struct v4l2_pix_format *pix)
 {
-    LOGI("w: %d\n", pix->width);
-    LOGI("h: %d\n", pix->height);
-    LOGI("color: %x\n", pix->colorspace);
+    ALOGI("w: %d\n", pix->width);
+    ALOGI("h: %d\n", pix->height);
+    ALOGI("color: %x\n", pix->colorspace);
     switch (pix->pixelformat) {
         case V4L2_PIX_FMT_YUYV:
-            LOGI ("YUYV\n");
+            ALOGI ("YUYV\n");
             break;
         case V4L2_PIX_FMT_UYVY:
-            LOGI ("UYVY\n");
+            ALOGI ("UYVY\n");
             break;
         case V4L2_PIX_FMT_RGB565:
-            LOGI ("RGB565\n");
+            ALOGI ("RGB565\n");
             break;
         case V4L2_PIX_FMT_RGB565X:
-            LOGI ("RGB565X\n");
+            ALOGI ("RGB565X\n");
             break;
         default:
-            LOGI("not supported\n");
+            ALOGI("not supported\n");
     }
 }
 
 void dump_crop(struct v4l2_crop *crop)
 {
-    LOGI("crop l: %d ", crop->c.left);
-    LOGI("crop t: %d ", crop->c.top);
-    LOGI("crop w: %d ", crop->c.width);
-    LOGI("crop h: %d\n", crop->c.height);
+    ALOGI("crop l: %d ", crop->c.left);
+    ALOGI("crop t: %d ", crop->c.top);
+    ALOGI("crop w: %d ", crop->c.width);
+    ALOGI("crop h: %d\n", crop->c.height);
 }
 
 void dump_window(struct v4l2_window *win)
 {
-    LOGI("window l: %d ", win->w.left);
-    LOGI("window t: %d ", win->w.top);
-    LOGI("window w: %d ", win->w.width);
-    LOGI("window h: %d\n", win->w.height);
+    ALOGI("window l: %d ", win->w.left);
+    ALOGI("window t: %d ", win->w.top);
+    ALOGI("window w: %d ", win->w.width);
+    ALOGI("window h: %d\n", win->w.height);
 }
 void v4l2_overlay_dump_state(int fd)
 {
@@ -150,40 +150,40 @@ void v4l2_overlay_dump_state(int fd)
     struct v4l2_crop crop;
     int ret;
 
-    LOGI("dumping driver state:");
+    ALOGI("dumping driver state:");
     format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
     ret = ioctl(fd, VIDIOC_G_FMT, &format);
     if (ret < 0)
         return;
-    LOGI("output pixfmt:\n");
+    ALOGI("output pixfmt:\n");
     dump_pixfmt(&format.fmt.pix);
 
     format.type = V4L2_BUF_TYPE_VIDEO_OVERLAY;
     ret = ioctl(fd, VIDIOC_G_FMT, &format);
     if (ret < 0)
         return;
-    LOGI("v4l2_overlay window:\n");
+    ALOGI("v4l2_overlay window:\n");
     dump_window(&format.fmt.win);
 
     crop.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
     ret = ioctl(fd, VIDIOC_G_CROP, &crop);
     if (ret < 0)
         return;
-    LOGI("output crop:\n");
+    ALOGI("output crop:\n");
     dump_crop(&crop);
 /*
     crop.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
     ret = ioctl(fd, VIDIOC_G_CROP, &crop);
     if (ret < 0)
         return;
-    LOGI("ovelay crop:\n");
+    ALOGI("ovelay crop:\n");
     dump_crop(&crop);
 */
 }
 
 static void error(int fd, const char *msg)
 {
-  LOGE("Error %d = %s from %s", errno, strerror(errno), msg);
+  ALOGE("Error %d = %s from %s", errno, strerror(errno), msg);
 #ifdef OVERLAY_DEBUG
   v4l2_overlay_dump_state(fd);
 #endif
@@ -195,7 +195,7 @@ static int v4l2_overlay_ioctl(int fd, int req, void *arg, const char* msg)
     ret = ioctl(fd, req, arg);
     if (ret < 0) {
         if (req == V4L2_CID_ROTATE && errno == EINVAL)
-            LOGW("Error %d from %s (wrong ioctl ?)", errno, msg);
+            ALOGW("Error %d from %s (wrong ioctl ?)", errno, msg);
         else
             error(fd, msg);
         return -1;
@@ -274,16 +274,16 @@ int v4l2_overlay_init(int fd, uint32_t w, uint32_t h, uint32_t fmt)
     ret = v4l2_overlay_ioctl(fd, VIDIOC_G_FMT, &format, "get format");
     if (ret)
         return ret;
-    LOGI("v4l2_overlay_init:: w=%d h=%d\n", format.fmt.pix.width, format.fmt.pix.height);
+    ALOGI("v4l2_overlay_init:: w=%d h=%d\n", format.fmt.pix.width, format.fmt.pix.height);
 
     format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
     configure_pixfmt(&format.fmt.pix, fmt, w, h);
-    LOGI("v4l2_overlay_init:: w=%d h=%d\n", format.fmt.pix.width, format.fmt.pix.height);
+    ALOGI("v4l2_overlay_init:: w=%d h=%d\n", format.fmt.pix.width, format.fmt.pix.height);
     ret = v4l2_overlay_ioctl(fd, VIDIOC_S_FMT, &format, "set output format");
 
     format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
     ret = v4l2_overlay_ioctl(fd, VIDIOC_G_FMT, &format, "get output format");
-    LOGI("v4l2_overlay_init:: w=%d h=%d\n", format.fmt.pix.width, format.fmt.pix.height);
+    ALOGI("v4l2_overlay_init:: w=%d h=%d\n", format.fmt.pix.width, format.fmt.pix.height);
     return ret;
 }
 
@@ -319,14 +319,14 @@ int v4l2_overlay_set_position(int fd, int32_t x, int32_t y, int32_t w, int32_t h
                              "get v4l2_overlay format");
     if (ret)
        return ret;
-    LOGI("v4l2_overlay_set_position:: w=%d h=%d", format.fmt.win.w.width, format.fmt.win.w.height);
+    ALOGI("v4l2_overlay_set_position:: w=%d h=%d", format.fmt.win.w.width, format.fmt.win.w.height);
    
     configure_window(&format.fmt.win, w, h, x, y);
 
     format.type = V4L2_BUF_TYPE_VIDEO_OVERLAY;
     ret = v4l2_overlay_ioctl(fd, VIDIOC_S_FMT, &format,
                              "set v4l2_overlay format");
-    LOGI("v4l2_overlay_set_position:: w=%d h=%d", format.fmt.win.w.width, format.fmt.win.w.height);
+    ALOGI("v4l2_overlay_set_position:: w=%d h=%d", format.fmt.win.w.width, format.fmt.win.w.height);
     
     if (ret)
        return ret;
@@ -523,13 +523,13 @@ int v4l2_overlay_req_buf(int fd, uint32_t *num_bufs, int cacheable_buffers)
         error(fd, "reqbuf ioctl");
         return ret;
     }
-    LOGI("%d buffers allocated %d requested\n", reqbuf.count, *num_bufs);
+    ALOGI("%d buffers allocated %d requested\n", reqbuf.count, *num_bufs);
     if (reqbuf.count > *num_bufs) {
         error(fd, "Not enough buffer structs passed to get_buffers");
         return -ENOMEM;
     }
     *num_bufs = reqbuf.count;
-    LOGI("buffer cookie is %d\n", reqbuf.type);
+    ALOGI("buffer cookie is %d\n", reqbuf.type);
     return 0;
 }
 
@@ -561,7 +561,7 @@ int v4l2_overlay_query_buffer(int fd, int index, struct v4l2_buffer *buf)
     buf->type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
     buf->memory = V4L2_MEMORY_MMAP;
     buf->index = index;
-    LOGI("query buffer, mem=%u type=%u index=%u\n", buf->memory, buf->type,
+    ALOGI("query buffer, mem=%u type=%u index=%u\n", buf->memory, buf->type,
          buf->index);
     return v4l2_overlay_ioctl(fd, VIDIOC_QUERYBUF, buf, "querybuf ioctl");
 }
@@ -578,7 +578,7 @@ int v4l2_overlay_map_buf(int fd, int index, void **start, size_t *len)
         return ret;
 
     if (is_mmaped(&buf)) {
-        LOGE("Trying to mmap buffers that are already mapped!\n");
+        ALOGE("Trying to mmap buffers that are already mapped!\n");
         return -EINVAL;
     }
 
@@ -586,7 +586,7 @@ int v4l2_overlay_map_buf(int fd, int index, void **start, size_t *len)
     *start = mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED,
                   fd, buf.m.offset);
     if (*start == MAP_FAILED) {
-        LOGE("map failed, length=%u offset=%u\n", buf.length, buf.m.offset);
+        ALOGE("map failed, length=%u offset=%u\n", buf.length, buf.m.offset);
         return -EINVAL;
     }
     return 0;
@@ -647,7 +647,7 @@ int v4l2_overlay_q_buf(int fd, int index)
     if (ret)
         return ret;
     if (is_queued(buf)) {
-        LOGE("Trying to queue buffer to kernel that is already queued!\n");
+        ALOGE("Trying to queue buffer to kernel that is already queued!\n");
         return -EINVAL
     }
     */
@@ -673,7 +673,7 @@ int v4l2_overlay_dq_buf(int fd, int *index)
         return ret;
 
     if (is_dequeued(buf)) {
-        LOGE("Trying to dequeue buffer that is not in kernel!\n");
+        ALOGE("Trying to dequeue buffer that is not in kernel!\n");
         return -EINVAL
     }
     */

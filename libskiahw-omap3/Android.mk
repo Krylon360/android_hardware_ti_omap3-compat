@@ -13,7 +13,7 @@ TI_OMX_COMP_C_INCLUDES ?= \
 	$(TI_OMX_TOP)/common/inc \
 	$(TI_OMX_SYSTEM)/omx_core/inc \
 	$(TI_BRIDGE_INCLUDES) \
-	$(ANDROID_BUILD_TOP)/frameworks/base/include/media/stagefright/openmax \
+	$(ANDROID_BUILD_TOP)/frameworks/native/include/media/stagefright/openmax \
 
 OMX_VENDOR_INCLUDES ?= $(TI_OMX_COMP_C_INCLUDES)
 
